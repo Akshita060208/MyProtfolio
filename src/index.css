@@ -1,0 +1,73 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=Dancing+Script:wght@400..700&family=EB+Garamond:ital,wght@0,400..800;1,400..800&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "DM Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Playfair Display", serif;
+  --font-heading: "EB Garamond", serif;
+  --font-accent: "Dancing Script", cursive;
+
+  --color-primary: #874c67;
+  --color-primary-container: #e8a0bf;
+  --color-primary-fixed: #ffd8e6;
+  --color-primary-fixed-dim: #fbb1d1;
+  --color-on-primary-fixed: #370923;
+  
+  --color-secondary: #4b6546;
+  --color-secondary-container: #cdebc4;
+  
+  --color-tertiary: #436737;
+  --color-tertiary-container: #97c087;
+  
+  --color-surface: #fff8f8;
+  --color-surface-container-low: #fdf1f3;
+  --color-surface-container: #f7ebed;
+  --color-surface-container-high: #f1e5e8;
+  --color-surface-container-highest: #ebe0e2;
+  
+  --color-background: #fff8f8;
+  --color-on-surface: #201a1c;
+  --color-on-surface-variant: #514348;
+}
+
+@layer utilities {
+  .glass {
+    background: rgba(253, 246, 240, 0.6);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
+  
+  .glass-border {
+    border: 1px solid rgba(135, 76, 103, 0.2);
+  }
+
+  .shimmer-text {
+    background: linear-gradient(90deg, #874c67, #e8a0bf, #d4a843, #874c67);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: shimmer 4s linear infinite;
+  }
+
+  @keyframes shimmer {
+    to { background-position: 200% center; }
+  }
+
+  .floating-element {
+    animation: drift 6s ease-in-out infinite;
+  }
+
+  @keyframes drift {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-15px); }
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-background text-on-surface font-sans;
+}
