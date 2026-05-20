@@ -2,8 +2,57 @@ import { motion } from 'framer-motion';
 import PetalBackground from './components/PetalBackground';
 import { Mail, MapPin, Send, Grid, Sparkles, ArrowRight } from 'lucide-react';
 import { cn } from './lib/utils';
+import { useState } from "react";
 
 export default function App() {
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    message: "",
+  });
+  const [status, setStatus] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setStatus(null);
+
+    try {
+      const response = await fetch("http://localhost:5000/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const responseBody = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        const errorMessage = responseBody?.error || response.statusText || "Request failed";
+        throw new Error(errorMessage);
+      }
+
+      console.log(responseBody);
+      setStatus("success");
+      setFormData({ name: "", email: "", message: "" });
+    } catch (error) {
+      console.error("Contact form error:", error);
+      setStatus("error");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background selection:bg-primary-fixed selection:text-primary overflow-x-hidden relative">
       <PetalBackground />
@@ -13,7 +62,7 @@ export default function App() {
           <motion.a 
             href="#" 
             className="font-display text-2xl tracking-tight text-primary font-bold"
-            initial={{ opacity: 0, x: -20 }}
+            initial={{ opacity: 0, x: -20 } }
             animate={{ opacity: 1, x: 0 }}
           >
             AKSHITA
@@ -46,10 +95,6 @@ export default function App() {
           <div className="absolute bottom-[20%] right-[10%] w-96 h-96 bg-tertiary-fixed/20 rounded-full blur-[100px] floating-element" style={{ animationDelay: '2s' }} />
           <div className="absolute top-1/2 left-1/3 w-48 h-48 bg-secondary-fixed/10 rounded-full blur-[60px] floating-element" style={{ animationDelay: '4s' }} />
         </div>
-        
-        <script src="https://ais-pre-j5n4tgvrdgzlt25naznz7e-761428424299.asia-east1.run.app/js/petal-bg.js" />
-        {/* I'll use the component instead of external script */}
-        {/* But actually the user said I can hotlink images. I'll stick to the component for the background effect */}
         
         <div className="relative z-10 text-center max-w-4xl">
           <motion.p 
@@ -331,16 +376,26 @@ export default function App() {
             initial={{ opacity: 0, x: 20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
+            onSubmit={handleSubmit}
           >
             {[
-              { label: 'Your Name', placeholder: 'John Doe', type: 'text' },
-              { label: 'Email Address', placeholder: 'john@company.com', type: 'email' },
+              { label: 'Your Name', placeholder: 'John Doe', type: 'text', name: 'name' },
+              { label: 'Email Address', placeholder: 'john@company.com', type: 'email', name: 'email' },
             ].map((field) => (
-              <div key={field.label} className="group border-b border-primary-container transition-colors focus-within:border-primary py-2">
-                <label className="block text-xs text-on-surface-variant font-bold uppercase mb-1">{field.label}</label>
-                <input 
+              <div
+                key={field.label}
+                className="group border-b border-primary-container transition-colors focus-within:border-primary py-2"
+              >
+                <label className="block text-xs text-on-surface-variant font-bold uppercase mb-1">
+                  {field.label}
+                </label>
+                <input
                   type={field.type}
+                  name={field.name}
+                  value={formData[field.name as keyof typeof formData]}
+                  onChange={handleChange}
                   placeholder={field.placeholder}
+                  required
                   className="w-full bg-transparent border-none p-0 focus:ring-0 text-lg text-on-surface placeholder:text-surface-dim"
                 />
               </div>
@@ -348,13 +403,22 @@ export default function App() {
             <div className="group border-b border-primary-container transition-colors focus-within:border-primary py-2">
               <label className="block text-xs text-on-surface-variant font-bold uppercase mb-1">The Project</label>
               <textarea 
+                name="message"
+                value={formData.message}
+                onChange={handleChange}
                 placeholder="Tell me about your dream project..."
                 rows={4}
                 className="w-full bg-transparent border-none p-0 focus:ring-0 text-lg text-on-surface placeholder:text-surface-dim resize-none"
               />
             </div>
-            <button type="submit" className="mt-8 bg-primary text-on-primary py-4 rounded-full font-bold hover:scale-[1.02] transition-transform shadow-lg shadow-primary/30 flex items-center justify-center gap-2">
-              Send Inquiry <Send size={18} />
+            {status === 'success' && (
+              <p className="text-sm text-green-500">Message sent successfully!</p>
+            )}
+            {status === 'error' && (
+              <p className="text-sm text-red-500">Unable to send message. Try again later.</p>
+            )}
+            <button type="submit" disabled={isSubmitting} className="mt-8 bg-primary text-on-primary py-4 rounded-full font-bold hover:scale-[1.02] transition-transform shadow-lg shadow-primary/30 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed">
+              {isSubmitting ? 'Sending...' : 'Send Inquiry'} <Send size={18} />
             </button>
           </motion.form>
         </div>
